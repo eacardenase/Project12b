@@ -31,9 +31,11 @@ class ViewController: UICollectionViewController {
         cell.name.text = person.name
         cell.imageView.image = UIImage(contentsOfFile: path.path(percentEncoded: true))
         cell.imageView.contentMode = .scaleAspectFill
-        cell.imageView.layer.borderColor = UIColor.black.cgColor
+        cell.imageView.layer.borderColor = UIColor(white: 0, alpha: 0.5).cgColor
         cell.imageView.layer.borderWidth = 2
         cell.imageView.layer.cornerRadius = 3
+        cell.layer.borderColor = UIColor(white: 0, alpha: 0.9).cgColor
+        cell.layer.borderWidth = 1
         cell.layer.cornerRadius = 7
         
         return cell
@@ -42,18 +44,20 @@ class ViewController: UICollectionViewController {
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let person = people[indexPath.item]
         
-        let ac = UIAlertController(title: "Add person name", message: nil, preferredStyle: .alert)
+        let ac = UIAlertController(title: "Rename person", message: nil, preferredStyle: .alert)
         ac.addTextField()
         
-        let submitAction = UIAlertAction(title: "Submit", style: .default) { [weak collectionView, weak person, weak ac] _ in
+        let submitAction = UIAlertAction(title: "OK", style: .default) { [weak self, weak person, weak ac] _ in
             guard let personName = ac?.textFields?[0].text else { return }
             
             person?.name = personName
             
-            collectionView?.reloadData()
+            self?.collectionView.reloadData()
         }
         
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         ac.addAction(submitAction)
+        
         present(ac, animated: true)
         
     }
