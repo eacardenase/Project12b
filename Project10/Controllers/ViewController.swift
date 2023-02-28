@@ -10,12 +10,23 @@ import UIKit
 class ViewController: UICollectionViewController {
     
     var people = [Person]()
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewPerson))
         
+        if let savedPeople = defaults.object(forKey: "people") as? Data {
+            let jsonDecoder = JSONDecoder()
+            
+            do {
+                people = try jsonDecoder.decode([Person].self, from: savedPeople)
+                
+            } catch {
+                print("Failed to load people.")
+            }
+        }
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -42,15 +53,15 @@ class ViewController: UICollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let person = people[indexPath.item]
         
         let ac = UIAlertController(title: "Rename person", message: nil, preferredStyle: .alert)
         ac.addTextField()
         
-        let submitAction = UIAlertAction(title: "OK", style: .default) { [weak self, weak person, weak ac] _ in
+        let submitAction = UIAlertAction(title: "OK", style: .default) { [weak self, weak ac] _ in
             guard let personName = ac?.textFields?[0].text else { return }
             
-            person?.name = personName
+            self?.people[indexPath.item].name = personName
+            self?.save()
             
             self?.collectionView.reloadData()
         }
@@ -61,7 +72,10 @@ class ViewController: UICollectionViewController {
         present(ac, animated: true)
         
     }
-    
+
+}
+
+extension ViewController {
     @objc func addNewPerson() {
         let picker = UIImagePickerController()
         
@@ -70,7 +84,16 @@ class ViewController: UICollectionViewController {
         
         present(picker, animated: true)
     }
-
+    
+    private func save() {
+        let jsonEncoder = JSONEncoder()
+        
+        if let savedData = try? jsonEncoder.encode(people) {
+            defaults.set(savedData, forKey: "people")
+        } else {
+            print("Failed to save people.")
+        }
+    }
 }
 
 extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -87,6 +110,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
         let person = Person(name: "Unknown", image: imageName)
         
         people.append(person)
+        save()
         
         collectionView.reloadData()
         

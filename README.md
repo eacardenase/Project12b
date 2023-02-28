@@ -1,2 +1,2 @@
-#  Simple UIKit project reviewing UICollectionViewController and UIImagePickerController
+#  Project10 refactored using UserDefaults and Codable Protocol
 
